@@ -1,5 +1,4 @@
 <html lang="en">
-
 <head>
     <!-- JSP importing package -->
     <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
@@ -14,6 +13,7 @@
     <!-- bootstrap stylesheet -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
         integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="icon" href="./favicon.ico">    
     <title>Home</title>
 
     <!-- internal css -->
@@ -22,6 +22,10 @@
         .fa-user-circle-o {
             color: #4F5450;
             cursor: pointer;
+        }
+
+        .fa-clone{
+            /* color: #549BDE; */
         }
 
         /* user dropdown list */
@@ -58,6 +62,9 @@
             background-color: #333;
             color: white;
         }
+        .card{
+            cursor:pointer;
+        }
     </style>
 
 
@@ -72,7 +79,7 @@
         Connection conn=null;
         try{
             Class.forName("com.mysql.jdbc.Driver");
-            conn=DriverManager.getConnection("jdbc:mysql://bmfqadeaynicb7pn4izx-mysql.services.clever-cloud.com:3306/bmfqadeaynicb7pn4izx","uf3zyddfyt288imy","Jwc5yfLdhT7eSsWYsuc3"); 
+            conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/miniPrj","java1","ironman@3"); 
         }
         catch(Exception e){
             out.println("<script>alert('"+e+"')</script>");
@@ -106,6 +113,11 @@
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#projectModal">
                             <i class="fa fa-plus"></i>
                             Assign Project
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#updateDeadlineModal">
+                            <i class="fa fa-wrench"></i>
+                            Update Deadline
                         </a>
                     </div>
                 </li>
@@ -170,7 +182,7 @@
                                         ResultSet rs=ps.executeQuery();
 
                                         while(rs.next()){
-                                            out.println("<option>"+rs.getString("subjectName")+" "+rs.getString("subjectCode")+"</option>");
+                                            out.println("<option value='"+rs.getString("subjectCode")+"'>"+rs.getString("subjectName")+" "+rs.getString("subjectCode")+"</option>");
                                         }
                                     }
                                     catch(Exception e){
@@ -200,18 +212,74 @@
         </div>
     </div>
 
+    <!-- Modal for updating deadline -->
+    <div class="modal fade" id="updateDeadlineModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Update Deadline</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" role="alert" style="font-size:14px;">
+                        Add date to required fields , Rest field are not required to be filled...
+                    </div>
+                    <hr>
+                    <form action="" method="post">
+                         <div class="form-group">
+                            <label for="subjectNC">Subject</label>
+                            <select name="updateSubjectData" id="subjectNC" class="form-control">
+                                <% 
+                                    try{
+                                        String fetchSubject="select subjectName,subjectCode from subject";
+                                        ps=conn.prepareStatement(fetchSubject);
+                                        ResultSet rs=ps.executeQuery();
+
+                                        while(rs.next()){
+                                            out.println("<option value='"+rs.getString("subjectCode")+"'>"+rs.getString("subjectName")+" "+rs.getString("subjectCode")+"</option>");
+                                        }
+                                    }
+                                    catch(Exception e){
+                                        out.println("<script>alert('"+e+"')</script>");
+                                    }
+                            
+                                %>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="pstDate">Project starting date</label>
+                            <input type="date" name="updatePrjAssignDate" class="form-control" id="pstDate" >
+                        </div>
+                        <div class="form-group">
+                            <label for="pstDate">Problem statement deadline</label>
+                            <input type="date" name="updatePstDate" class="form-control" id="pstDate" >
+                        </div>
+                        <div class="form-group">
+                            <label for="codeDate">Code Submission deadline</label>
+                            <input type="date" name="updateCodeSbDate" class="form-control" id="codeDate" >
+                        </div>
+                        <hr>
+                        <button type="submit" name="updateDeadline" class="btn btn-outline-primary col-sm-3">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- displaying current projects under subject -->
-    <div class="container p-5">
-        <h2 style="margin-left: 20px;">Projects</h2>
+    <div class="container my-4 p-5 shadow">
+        <h2 style="margin-left: 20px;font-weight:bold;"><i class="fa fa-cube primary mx-2" aria-hidden="true"></i>Projects</h2>
         <hr>
         <%
             try{
-                String fetch="select subject,prjAssignDate,problemStatementDate,codeSubmissionDate from assignPrj where instructorId='vaibhav3'";
+                String fetch="select getSubjectName(subjectCode) as subject,subjectCode,prjAssignDate,problemStatementDate,codeSubmissionDate from assignPrj where instructorId='vaibhav3'";
                 ps=conn.prepareStatement(fetch);
                 ResultSet rs=ps.executeQuery();
                 
                 while(rs.next()){
-                    out.println("<div class='card my-3'><h5 class='card-header text-primary'>Subject Name - "+rs.getString("subject")+"</h5><ul class='list-group'><li class='list-group-item text-success'>Teams Enrolled - </li><li class='list-group-item'>Project start date - "+rs.getString("prjAssignDate")+"</li><li class='list-group-item'>Problem statement deadline date - "+rs.getString("problemStatementDate")+"</li><li class='list-group-item'>Code submission deadline date - "+rs.getString("codeSubmissionDate")+"</li></ul></div>");
+                    out.println("<div class='card my-3 shadow' onclick='setSubjectVal(this)' id='"+rs.getString("subjectCode")+"'><h5 class='card-header text-primary'>Subject Name - "+rs.getString("subject")+"</h5><ul class='list-group'><li class='list-group-item text-success'>Teams Enrolled - </li><li class='list-group-item'>Project start date - "+rs.getString("prjAssignDate")+"</li><li class='list-group-item'>Problem statement deadline date - "+rs.getString("problemStatementDate")+"</li><li class='list-group-item'>Code submission deadline date - "+rs.getString("codeSubmissionDate")+"</li></ul></div>");
                 }
 
             }catch(Exception e){
@@ -221,36 +289,58 @@
     
     </div>
 
+    <script>
+        function setSubjectVal(subject) {
+            console.log(subject.id);
+            window.location="instSubjectTeams.jsp?subjectCode="+subject.id;   
+             
+        }
+        var url=new URL(window.location.href);
+        console.log(url.searchParams.get("id"));
+    </script>
+
     <!-- JSP -->
     <%
         //Check form is submitted 
         int checkInsert=0;
+
+        //subject form
         if(request.getParameter("subject")!=null){
             try{
 
                 String subjectName=request.getParameter("subjectName");
                 String subjectCode=request.getParameter("subjectCode");
-                String insertSubjectData="insert into subject values(?,?,?)";
 
-                ps=conn.prepareStatement(insertSubjectData);
-                ps.setString(1,"vaibhav3");
-                ps.setString(2,subjectName);
-                ps.setString(3,subjectCode);
+                String checkSubject="select * from subject where subjectCode='"+subjectCode+"'";
+                ps=conn.prepareStatement(checkSubject);
+                ResultSet check=ps.executeQuery();
 
-                checkInsert=ps.executeUpdate();
+                //duplicate subject
+                if(check.next()){
+                    out.print("<script>alert('Subject already available....');</script>");
+                }
+                else{
+                    String insertSubjectData="insert into subject values(?,?,?)";
 
-                //out.println(subjectCode+subjectName);
-                if(checkInsert==0)
-                    out.println("<script>alert('Failed...')</script>");
+                    ps=conn.prepareStatement(insertSubjectData);
+                    ps.setString(1,"vaibhav3");
+                    ps.setString(2,subjectName);
+                    ps.setString(3,subjectCode);
 
-                    response.setStatus(response.SC_MOVED_TEMPORARILY);
-                    response.setHeader("Location", "instructorHome.jsp");
+                    checkInsert=ps.executeUpdate();
+                    if(checkInsert==0)
+                        out.println("<script>alert('Failed...')</script>");
+
+                        response.setStatus(response.SC_MOVED_TEMPORARILY);
+                        response.setHeader("Location", "instructorHome.jsp");
+                }
             }
             catch(Exception e){
                 out.println("<script>alert('"+e+"')</script>");
             }
         }
 
+        //project assign form
         if(request.getParameter("assignPrj")!=null){
              try{
 
@@ -268,13 +358,56 @@
                 ps.setString(5,codeSbDate);                
 
                 checkInsert=ps.executeUpdate();
-
-                //out.println(subjectCode+subjectName);
                 if(checkInsert==0)
                     out.println("<script>alert('Failed...')</script>");
-
+                else{
                     response.setStatus(response.SC_MOVED_TEMPORARILY);
                     response.setHeader("Location", "instructorHome.jsp");
+                }    
+
+             }
+             catch(Exception e){
+                out.println("<script>alert('"+e+"')</script>");
+            }
+        }
+
+            //update deadline form
+            if(request.getParameter("updateDeadline")!=null){
+             try{
+
+                String updateSubjectData=request.getParameter("updateSubjectData");
+                String updatePrjAssignDate=new String(request.getParameter("updatePrjAssignDate"));
+                String updatePstDate=new String(request.getParameter("updatePstDate"));
+                String updateCodeSbDate=new String(request.getParameter("updateCodeSbDate"));
+
+                String updateDeadline="update assignPrj set ";
+
+                if(!updatePrjAssignDate.equals("")){
+                    updateDeadline=updateDeadline+"prjAssignDate='"+updatePrjAssignDate+"',";
+                }
+
+                if(!updatePstDate.equals("")){
+                    updateDeadline=updateDeadline+"problemStatementDate='"+updatePstDate+"',";
+                }
+
+                if(!updateCodeSbDate.equals("")){
+                    updateDeadline=updateDeadline+"codeSubmissionDate='"+updateCodeSbDate+"',";
+                }
+
+                updateDeadline=updateDeadline.substring(0,updateDeadline.length() - 1)+" where subjectCode='"+updateSubjectData+"';";
+
+
+                //out.println(updateDeadline);
+
+                ps=conn.prepareStatement(updateDeadline);                
+
+                checkInsert=ps.executeUpdate();
+                if(checkInsert==0)
+                    out.println("<script>alert('Failed...')</script>");
+                else{
+                    response.setStatus(response.SC_MOVED_TEMPORARILY);
+                    response.setHeader("Location", "instructorHome.jsp");
+                }
 
              }
              catch(Exception e){
@@ -292,10 +425,16 @@
 
     <!-- Footer for contact-us -->
     <footer class="page-footer p-4 bg-dark text-light d-print-none" style="position:relative;bottom:0;width:100%;">
-        <p class="lead"> Contact Us : &emsp;
+        
+        <p class="lead ml-2" style="font-size:18px;"> Contact Us &emsp;
+            <div class="col-sm-auto mt-1">
             <i class="fa fa-github fa-lg" aria-hidden="true"></i> Github &emsp;
+            </div>
+            <div class="col-sm-auto mt-1">
             <i class="fa fa-envelope fa-lg" aria-hidden="true"></i> Gmail
+            </div>
         </p>
+       
     </footer>
 </body>
 

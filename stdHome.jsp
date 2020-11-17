@@ -4,7 +4,7 @@
     <!-- JSP importing package -->
     <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
-    <%@page import="java.sql.*,java.util.*"%>
+    <%@page import="java.sql.*,java.util.*,org.apache.commons.fileupload.disk.*,org.apache.commons.fileupload.servlet.*,org.apache.commons.fileupload.*,org.apache.commons.io.output.*,java.io.*"%>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +15,8 @@
     <!-- bootstrap stylesheet -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
         integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+
+    <link rel="icon" href="./favicon.ico">    
     <title>Home</title>
 
 
@@ -65,6 +67,18 @@
 
 <body>
 
+    <%-- JSP connecting to db --%>
+    <%
+        PreparedStatement ps=null;
+        Connection conn=null;
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
+            conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/miniPrj","java1","ironman@3"); 
+        }
+        catch(Exception e){
+            out.println("<script>alert('"+e+"')</script>");
+        }
+    %>
 
     <!-- Navbar / Header of website -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -95,6 +109,11 @@
                             <i class="fa fa-user-plus"></i>
                             Create Team
                         </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#leaveTeamModal">
+                            <i class="fa fa-sign-out"></i>
+                            Leave Team
+                        </a>
                     </div>
                 </li>
             </ul>
@@ -123,16 +142,39 @@
                     <form>
                         <div class="form-group">
                             <label for="inputTeamCode">Team code</label>
-                            <input type="text" class="form-control" id="inputTeamCode" required>
+                            <input type="text" name="joinCode" class="form-control" id="inputTeamCode" required>
                         </div>
                         <hr>
-                        <button type="submit" class="btn btn-outline-primary col-sm-3" name="joinTeam">Join</button>
+                        <button type="submit" name="joinTeam" class="btn btn-outline-primary col-sm-3" >Join</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal for taking leave team data -->
+    <div class="modal fade" id="leaveTeamModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Leave Team</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="inputTeamCode">Team code</label>
+                            <input type="text" name="leaveCode" class="form-control" id="inputTeamCode" required>
+                        </div>
+                        <hr>
+                        <button type="submit" name="leaveTeam" class="btn btn-outline-primary col-sm-3">Leave</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal for taking create team data -->
     <div class="modal fade" id="createTeamModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -145,48 +187,73 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form action="fileUploader.jsp" method="post" enctype="multipart/form-data">
 
                         <div class="form-group">
                             <label for="inputTeamName">Team name</label>
-                            <input type="text" class="form-control" id="inputTeamName" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="teamLogo">Team logo</label>
-                            <div class="custom-file">
-                                <input type="file" class="form-control custom-file-input" id="teamLogo">
-                                <label class="custom-file-label" for="teamLogo"
-                                    aria-describedby="inputGroupFileAddon02">Choose file</label>
-                            </div>
+                            <input type="text" name="teamName" class="form-control" id="inputTeamName" minLength="3" >
                         </div>
 
                         <div class="form-group">
                             <label for="noOfMembers">No of members</label>
-                            <input type="tel" class="form-control" id="noOfMembers" required>
+                            <input type="tel" name="noOfMembers" class="form-control" id="noOfMembers" >
                         </div>
 
                         <div class="form-group">
                             <label for="projectName">Project name</label>
-                            <input type="text" class="form-control" id="projectName" required>
+                            <input type="text" name="prjName" class="form-control" id="projectName" minLength="3" >
                         </div>
 
                         <div class="form-group">
                             <label for="subjectNC">Subject</label>
-                            <select name="subjectData" id="subjectNC" class="form-control" required>
-                                <option value=""></option>
+                            <select name="subjectData" id="subjectNC" class="form-control">
+                                <% 
+                                    try{
+                                        String fetchSubject="select subjectName,subjectCode from subject";
+                                        ps=conn.prepareStatement(fetchSubject);
+                                        ResultSet rs=ps.executeQuery();
+
+                                        while(rs.next()){
+                                            out.println("<option value='"+rs.getString("subjectCode")+"'>"+rs.getString("subjectName")+" "+rs.getString("subjectCode")+"</option>");
+                                        }
+                                    }
+                                    catch(Exception e){
+                                        out.println("<script>alert('"+e+"')</script>");
+                                    }
+                            
+                                %>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label for="inputInstructor">Instructor</label>
-                            <select name="subjectData" id="inputInstructor" class="form-control" required>
-                                <option value=""></option>
+                            <select name="instructorName" id="inputInstructor" class="form-control">
+                                <% 
+                                    try{
+                                        String fetchInst="select fname,lname from instructor";
+                                        ps=conn.prepareStatement(fetchInst);
+                                        ResultSet rs=ps.executeQuery();
+
+                                        while(rs.next()){
+                                            out.println("<option>"+rs.getString("fname")+" "+rs.getString("lname")+"</option>");
+                                        }
+                                    }
+                                    catch(Exception e){
+                                        out.println("<script>alert('"+e+"')</script>");
+                                    }
+                            
+                                %>
                             </select>
                         </div>
 
+
+                        <div class="form-group">
+                            <label for="teamLogo">Team logo</label>
+                            <input type="file" class="form-control-file" name="teamLogo" id="teamLogo" align="right">
+                        </div>
+
                         <hr>
-                        <button type="submit" class="btn btn-outline-primary col-sm-3">Create</button>
+                        <button type="submit" name="createTeam" class="btn btn-outline-primary col-sm-3">Create</button>
                     </form>
                 </div>
             </div>
@@ -194,44 +261,77 @@
     </div>
 
     <!-- displaying teams of student -->
-    <div class="container p-5">
-        <h2 style="margin-left: 20px;">Teams</h2>
+    <div class="container p-5 my-4 shadow">
+        <h2 style="margin-left: 22px;font-weight:bold;"><i class="fa fa-users mx-2"></i>Teams</h2>
         <hr>
-        <div class="card my-3">
-            <h5 class="card-header text-primary">
-                Team Name - Iron Man
-                <img src="./src/db.png" alt="logo" width="35" height="35" align="right" style="margin-right: 20px;">
-            </h5>
-            <ul class="list-group">
-                <li class="list-group-item"> Subject name - DS </li>
-                <li class="list-group-item"> Prject name - ecommerce site</li>
-                <li class="list-group-item">
-                    Status - &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
-                    Marks - &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
-                    Team Code -
-                </li>
-            </ul>
-        </div>
-        <div class="card my-3">
-            <h5 class="card-header text-primary">
-                Team Name - Iron Man
-                <img src="./src/db.png" alt="logo" width="35" height="35" align="right" style="margin-right: 20px;">
-            </h5>
-            <ul class="list-group">
-                <li class="list-group-item"> Subject name - DS </li>
-                <li class="list-group-item"> Prject name - ecommerce site</li>
-                <li class="list-group-item">
-                    Status - &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
-                    Marks - &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
-                    Team Code -
-                </li>
-            </ul>
-        </div>
+         <%
+            try{
+                String fetch="select teamName,projectName,getSubjectName(subjectCode) as subject,teamCode,teamLogoName from teams where teamCode=(select teamCode from studentTeams where enroll='vaibhav3')";
+                ps=conn.prepareStatement(fetch);
+                ResultSet rs=ps.executeQuery();
+                
+                while(rs.next()){
+                    out.println("<div class='card my-3 shadow'><h5 class='card-header text-primary'>Team Name - "+rs.getString("teamName")+"<img src='./TeamLogo/"+rs.getString("teamLogoName")+"' alt='logo' width='35' height='35' align='right' style='margin-right: 20px;'></h5><ul class='list-group'><li class='list-group-item'> Subject - "+rs.getString("subject") +"</li><li class='list-group-item'> Prject name - "+rs.getString("projectName")+"</li><li class='list-group-item'>Status - &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Marks - &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Team Code - "+ rs.getString("teamCode")+"</li></ul></div>");
+                }
 
+            }catch(Exception e){
+                out.println("<script>alert('"+e+"')</script>");
+            }
+        %>
         
     </div>
 
+
     <!-- JSP -->
+    <%
+        //Check form is submitted 
+        int checkInsert=0;
+        if(request.getParameter("joinTeam")!=null){
+            try{
+                String joinCode=request.getParameter("joinCode");
+                String insertData="insert into studentTeams values(?,?)";
+                ps=conn.prepareStatement(insertData);
+                ps.setString(1,"vaibhav3");
+                ps.setString(2,joinCode);
+
+                checkInsert=ps.executeUpdate();
+
+                    if(checkInsert==0)
+                        out.println("<script>alert('Failed...')</script>");
+                    else{
+                        response.setStatus(response.SC_MOVED_TEMPORARILY);
+                        response.setHeader("Location", "stdHome.jsp");
+                    }
+
+            }
+            catch(Exception e){
+                out.println("<script>alert('"+e+"')</script>");
+            }
+        }
+
+        if(request.getParameter("leaveTeam")!=null){
+            try{
+                String leaveCode=request.getParameter("leaveCode");
+                String deleteData="delete from studentTeams where enroll=? and teamCode=?;";
+                ps=conn.prepareStatement(deleteData);
+                ps.setString(1,"vaibhav3");
+                ps.setString(2,leaveCode);
+
+                checkInsert=ps.executeUpdate();
+
+                    if(checkInsert==0)
+                        out.println("<script>alert('Failed...')</script>");
+                    else{
+                        response.setStatus(response.SC_MOVED_TEMPORARILY);
+                        response.setHeader("Location", "stdHome.jsp");
+                    }
+
+            }
+            catch(Exception e){
+                out.println("<script>alert('"+e+"')</script>");
+            }
+        }
+    %>
 
     <!-- bootstrap cdn -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
@@ -241,12 +341,19 @@
         integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
         crossorigin="anonymous"></script>
 
+
     <!-- Footer for contact-us -->
-    <footer class="page-footer p-4 bg-dark text-light d-print-none" style="position:absolute;bottom:0;width:100%;">
-        <p class="lead"> Contact Us : &emsp;
+    <footer class="page-footer p-4 bg-dark text-light d-print-none" style="position:relative;bottom:0;width:100%;">
+        
+        <p class="lead ml-2" style="font-size:18px;"> Contact Us &emsp;
+            <div class="col-sm-auto mt-1">
             <i class="fa fa-github fa-lg" aria-hidden="true"></i> Github &emsp;
+            </div>
+            <div class="col-sm-auto mt-1">
             <i class="fa fa-envelope fa-lg" aria-hidden="true"></i> Gmail
+            </div>
         </p>
+       
     </footer>
 </body>
 
