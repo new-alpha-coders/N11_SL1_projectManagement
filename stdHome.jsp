@@ -114,6 +114,11 @@
                             <i class="fa fa-sign-out"></i>
                             Leave Team
                         </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#deleteTeamModal">
+                            <i class="fa fa-trash"></i>
+                            Delete Team
+                        </a>
                     </div>
                 </li>
             </ul>
@@ -170,6 +175,30 @@
                         </div>
                         <hr>
                         <button type="submit" name="leaveTeam" class="btn btn-outline-primary col-sm-3">Leave</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for taking delete team data -->
+    <div class="modal fade" id="deleteTeamModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Leave Team</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="inputTeamCode">Team code</label>
+                            <input type="text" name="deleteCode" class="form-control" id="inputTeamCode" required>
+                        </div>
+                        <hr>
+                        <button type="submit" name="deleteTeam" class="btn btn-outline-primary col-sm-3">Delete</button>
                     </form>
                 </div>
             </div>
@@ -324,6 +353,38 @@
                     else{
                         response.setStatus(response.SC_MOVED_TEMPORARILY);
                         response.setHeader("Location", "stdHome.jsp");
+                    }
+
+            }
+            catch(Exception e){
+                out.println("<script>alert('"+e+"')</script>");
+            }
+        }
+        int checkDelete=0;
+        if(request.getParameter("deleteTeam")!=null){
+            try{
+                String deleteCode=request.getParameter("deleteCode");
+                String deleteTeamData="delete from teams where enroll=? and teamCode=?;";
+                ps=conn.prepareStatement(deleteTeamData);
+                ps.setString(1,"vaibhav3");
+                ps.setString(2,deleteCode);
+
+                checkDelete=ps.executeUpdate();
+
+                    if(checkDelete==0)
+                        out.println("<script>alert('Failed...')</script>");
+                    else{
+                        String deleteData="delete from studentTeams where teamCode=?;";
+                        ps=conn.prepareStatement(deleteData);
+                        ps.setString(1,deleteCode);
+
+                        checkDelete=ps.executeUpdate();
+                        if(checkDelete==0)
+                            out.println("<script>alert('Failed...')</script>");
+                        else{
+                            response.setStatus(response.SC_MOVED_TEMPORARILY);
+                            response.setHeader("Location", "stdHome.jsp");
+                        }
                     }
 
             }
