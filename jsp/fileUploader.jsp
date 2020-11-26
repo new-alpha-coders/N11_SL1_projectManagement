@@ -6,9 +6,11 @@
     <%
         PreparedStatement ps=null;
         Connection conn=null;
+        String enroll=null;
         try{
             Class.forName("com.mysql.jdbc.Driver");
             conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/miniPrj","java1","ironman@3"); 
+            enroll=(String)session.getAttribute("user");
         }
         catch(Exception e){
             out.println("<script>alert('"+e+"')</script>");
@@ -22,7 +24,7 @@
                 int maxFactSize=5000*1024;
                 String type=request.getContentType();
                 String[] textData=new String[6];
-                out.println(type);
+                //out.println(type);
                 int j=0;
 
                 if(type.indexOf("multipart/form-data")>=0){
@@ -52,29 +54,42 @@
                     }
                     
                     int x=(int)(Math.random()*10000);
-                    fileName=textData[0].substring(0,3)+textData[2].substring(0,3)+Integer.toString(x)+fileName.substring(fileName.indexOf("."));
-                    out.println(fileName);
-                    file=new File("/opt/tomcat/webapps/miniPrj/TeamLogo",fileName);
-                    myFile.write(file);
 
-                    String insertData="insert into teams values(?,?,?,?,?,?,?,?)";
-                    ps=conn.prepareStatement(insertData);
-                    ps.setString(1,"vaibhav3");
-                    ps.setString(2,textData[0]);
-                    ps.setInt(3,Integer.parseInt(textData[1]));
-                    ps.setString(4,textData[2]);
-                    ps.setString(5,textData[3]);
-                    ps.setString(6,textData[4]);
-                    ps.setString(7,fileName.substring(0,fileName.indexOf(".")));
-                    ps.setString(8,fileName);
+                    String checkInst="select * from subject where instructorId=? and subjectCode=?";
+                    ps=conn.prepareStatement(checkInst);
+                    ps.setString(1,textData[4]);//instructorId
+                    ps.setString(2,textData[3]);//subject
 
-                    int checkInsert=ps.executeUpdate();
+                    ResultSet rs=ps.executeQuery();
 
-                    if(checkInsert==0)
-                        out.println("<script>alert('Failed...')</script>");
+                    if(!rs.next()){
+                        out.print("<script>alert('Please check subject and instructor...');window.location='stdHome.jsp';</script>");  
+                    }
                     else{
-                        response.setStatus(response.SC_MOVED_TEMPORARILY);
-                        response.setHeader("Location", "stdHome.jsp");
+                        fileName=textData[0].substring(0,3)+textData[2].substring(0,3)+Integer.toString(x)+fileName.substring(fileName.indexOf("."));
+                        out.println(fileName);
+                        file=new File("/opt/tomcat/webapps/miniPrj/TeamLogo",fileName);
+                        myFile.write(file);
+
+                        String insertData="insert into teams values(?,?,?,?,?,?,?,?)";
+                        ps=conn.prepareStatement(insertData);
+                        ps.setString(1,enroll);
+                        ps.setString(2,textData[0]);
+                        ps.setInt(3,Integer.parseInt(textData[1]));
+                        ps.setString(4,textData[2]);
+                        ps.setString(5,textData[3]);
+                        ps.setString(6,textData[4]);
+                        ps.setString(7,fileName.substring(0,fileName.indexOf(".")));
+                        ps.setString(8,fileName);
+
+                        int checkInsert=ps.executeUpdate();
+
+                        if(checkInsert==0)
+                            out.println("<script>alert('Failed...')</script>");
+                        else{
+                            response.setStatus(response.SC_MOVED_TEMPORARILY);
+                            response.setHeader("Location", "stdHome.jsp");
+                        }
                     }
                 }
             }

@@ -13,61 +13,11 @@
     <!-- bootstrap stylesheet -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
         integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-    <link rel="icon" href="./favicon.ico">    
+    <link rel="icon" href="../favicon.ico">    
     <title>Home</title>
 
-    <!-- internal css -->
-    <style>
-        /* changing font awesome icon color */
-        .fa-user-circle-o {
-            color: #4F5450;
-            cursor: pointer;
-        }
-
-        .fa-clone{
-            /* color: #549BDE; */
-        }
-
-        /* user dropdown list */
-        .profile {
-            display: inline-block;
-            position: relative;
-        }
-
-        #userMenu {
-            display: none;
-            position: absolute;
-            margin-left: -20px;
-            margin-top: 1px;
-            z-index: 1;
-        }
-
-        #userMenu a {
-            text-decoration: none;
-            width: 120px;
-            color: #333;
-            background-color: whitesmoke;
-            padding: 5px 10px;
-            display: block;
-            font-size: 16px;
-            border-radius: 10px;
-        }
-
-        .profile:hover #userMenu {
-            display: block;
-            color: red;
-        }
-
-        .dropdown-item:hover {
-            background-color: #333;
-            color: white;
-        }
-        .card{
-            cursor:pointer;
-        }
-    </style>
-
-
+    <!-- external css -->
+    <link rel="stylesheet" href="../css/home.css">
     
 </head>
 
@@ -77,9 +27,11 @@
     <%
         PreparedStatement ps=null;
         Connection conn=null;
+        String instructorId=null;
         try{
             Class.forName("com.mysql.jdbc.Driver");
             conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/miniPrj","java1","ironman@3"); 
+            instructorId=(String)session.getAttribute("user");
         }
         catch(Exception e){
             out.println("<script>alert('"+e+"')</script>");
@@ -123,10 +75,19 @@
                 </li>
             </ul>
         </div>
-        <div class="profile mr-3">
-            <span class="fa fa-user-circle-o fa-2x" id="user"> </span>
+       <div class="profile mr-3">
+            <div id="user">
+                <span>hi , 
+                    <% 
+                    if(session.getAttribute("user")==null)
+                        response.sendRedirect("../index.html");
+                    else   
+                        out.print(session.getAttribute("user"));
+                    %>
+                <i class="fa fa-user-circle-o px-1"> </i></span>
+            </div>
             <div id="userMenu">
-                <a href="index.html">log-out</a>
+                <a href="./logout.jsp">LogOut</a>
             </div>
         </div>
         <!-- </div> -->
@@ -177,7 +138,7 @@
                             <select name="subjectData" id="subjectNC" class="form-control">
                                 <% 
                                     try{
-                                        String fetchSubject="select subjectName,subjectCode from subject";
+                                        String fetchSubject="select subjectName,subjectCode from subject where instructorId='"+instructorId+"';";
                                         ps=conn.prepareStatement(fetchSubject);
                                         ResultSet rs=ps.executeQuery();
 
@@ -233,7 +194,7 @@
                             <select name="updateSubjectData" id="subjectNC" class="form-control">
                                 <% 
                                     try{
-                                        String fetchSubject="select subjectName,subjectCode from subject";
+                                        String fetchSubject="select subjectName,subjectCode from subject where instructorId='"+instructorId+"';";
                                         ps=conn.prepareStatement(fetchSubject);
                                         ResultSet rs=ps.executeQuery();
 
@@ -270,16 +231,37 @@
 
     <!-- displaying current projects under subject -->
     <div class="container my-4 p-5 shadow">
-        <h2 style="margin-left: 20px;font-weight:bold;"><i class="fa fa-cube primary mx-2" aria-hidden="true"></i>Projects</h2>
+        <h2 style="margin-left: 20px;font-weight:bold;"><i class="fa fa-cube primary mx-2" aria-hidden="true"></i>Assigned Projects</h2>
         <hr>
         <%
             try{
-                String fetch="select getSubjectName(subjectCode) as subject,subjectCode,prjAssignDate,problemStatementDate,codeSubmissionDate from assignPrj where instructorId='vaibhav3'";
+                String fetch="select getSubjectName(subjectCode) as subject,subjectCode,prjAssignDate,problemStatementDate,codeSubmissionDate,teamCount(subjectCode) as teamCount from assignPrj where instructorId='"+instructorId+"';";
                 ps=conn.prepareStatement(fetch);
                 ResultSet rs=ps.executeQuery();
                 
                 while(rs.next()){
-                    out.println("<div class='card my-3 shadow' onclick='setSubjectVal(this)' id='"+rs.getString("subjectCode")+"'><h5 class='card-header text-primary'>Subject Name - "+rs.getString("subject")+"</h5><ul class='list-group'><li class='list-group-item text-success'>Teams Enrolled - </li><li class='list-group-item'>Project start date - "+rs.getString("prjAssignDate")+"</li><li class='list-group-item'>Problem statement deadline date - "+rs.getString("problemStatementDate")+"</li><li class='list-group-item'>Code submission deadline date - "+rs.getString("codeSubmissionDate")+"</li></ul></div>");
+                    out.println("<div class='card my-3 shadow' ><h5 class='card-header text-primary' id='"+rs.getString("subjectCode")+"' onclick='setSubjectVal(this)'>Subject Name - "+rs.getString("subject")+"</h5><ul class='list-group'><li class='list-group-item text-success'>Teams Enrolled - "+ rs.getString("teamCount")+" </li><li class='list-group-item text-primary'>Project start date - "+rs.getString("prjAssignDate")+"</li><li class='list-group-item text-danger'>Problem statement deadline date - "+rs.getString("problemStatementDate")+"</li><li class='list-group-item text-danger'>Code submission deadline date - "+rs.getString("codeSubmissionDate")+"</li></ul></div>");
+                }
+
+            }catch(Exception e){
+                out.println("<script>alert('"+e+"')</script>");
+            }
+        %>
+    
+    </div>
+
+    <!-- displaying current projects for review -->
+    <div class="container my-4 p-5 shadow">
+        <h2 style="margin-left: 20px;font-weight:bold;"><i class="fa fa-cube primary mx-2" aria-hidden="true"></i>Projects For Review</h2>
+        <hr>
+        <%
+            try{
+                String fetch="select teamName,projectName,getSubjectName(subjectCode) as subject,pstStatus(teamCode) as status,teamCode,teamLogoName from teams where teamCode in (select teamCode from reviewer where reviewer='"+instructorId+"')";
+                ps=conn.prepareStatement(fetch);
+                ResultSet rs=ps.executeQuery();
+                
+                while(rs.next()){
+                    out.println("<div class='card my-3 shadow'  ><h5 class='card-header text-primary' id='"+rs.getString("teamCode")+"' onclick='setReviewVal(this)' >Team Name - "+rs.getString("teamName")+"<img src='../TeamLogo/"+rs.getString("teamLogoName")+"' alt='logo' width='35' height='35' align='right' style='margin-right: 20px;'></h5><ul class='list-group'><li class='list-group-item'> Subject - "+rs.getString("subject") +"</li><li class='list-group-item'> Prject name - "+rs.getString("projectName")+"</li><li class='list-group-item'>Team Code - "+ rs.getString("teamCode")+"</li><li class='list-group-item'>"+rs.getString("status")+"</li></ul></div>");
                 }
 
             }catch(Exception e){
@@ -295,8 +277,14 @@
             window.location="instSubjectTeams.jsp?subjectCode="+subject.id;   
              
         }
-        var url=new URL(window.location.href);
-        console.log(url.searchParams.get("id"));
+
+        function setReviewVal(team) {
+            console.log(team.id);
+            window.location="viewProjectReviewer.jsp?team="+team.id;   
+             
+        }
+        // var url=new URL(window.location.href);
+        // console.log(url.searchParams.get("id"));
     </script>
 
     <!-- JSP -->
@@ -321,9 +309,9 @@
                 }
                 else{
                     String insertSubjectData="insert into subject values(?,?,?)";
-
+        
                     ps=conn.prepareStatement(insertSubjectData);
-                    ps.setString(1,"vaibhav3");
+                    ps.setString(1,instructorId);
                     ps.setString(2,subjectName);
                     ps.setString(3,subjectCode);
 
@@ -336,7 +324,7 @@
                 }
             }
             catch(Exception e){
-                out.println("<script>alert('"+e+"')</script>");
+                out.println("<script>alert('"+e.getMessage()+"')</script>");
             }
         }
 
@@ -351,7 +339,7 @@
 
                 String insertData="insert into assignPrj values(?,?,?,?,?)";
                 ps=conn.prepareStatement(insertData);
-                ps.setString(1,"vaibhav3");
+                ps.setString(1,instructorId);
                 ps.setString(2,subjectData);
                 ps.setString(3,prjAssignDate);
                 ps.setString(4,pstDate);
@@ -367,7 +355,7 @@
 
              }
              catch(Exception e){
-                out.println("<script>alert('"+e+"')</script>");
+                out.println("<script>alert('"+e.getMessage()+"')</script>");
             }
         }
 
@@ -411,7 +399,7 @@
 
              }
              catch(Exception e){
-                out.println("<script>alert('"+e+"')</script>");
+                out.println("<script>alert('"+e.getMessage()+"')</script>");
             }
         }
     %>

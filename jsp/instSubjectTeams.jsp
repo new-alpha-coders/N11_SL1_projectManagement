@@ -13,61 +13,12 @@
     <!-- bootstrap stylesheet -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
         integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-    <link rel="icon" href="./favicon.ico">    
+    
+    <link rel="icon" href="../favicon.ico">    
+
+    <!-- external css -->
+    <link rel="stylesheet" href="../css/home.css">
     <title>Home</title>
-
-    <!-- internal css -->
-    <style>
-        /* changing font awesome icon color */
-        .fa-user-circle-o {
-            color: #4F5450;
-            cursor: pointer;
-        }
-
-        .fa-clone{
-            /* color: #549BDE; */
-        }
-
-        /* user dropdown list */
-        .profile {
-            display: inline-block;
-            position: relative;
-        }
-
-        #userMenu {
-            display: none;
-            position: absolute;
-            margin-left: -20px;
-            margin-top: 1px;
-            z-index: 1;
-        }
-
-        #userMenu a {
-            text-decoration: none;
-            width: 120px;
-            color: #333;
-            background-color: whitesmoke;
-            padding: 5px 10px;
-            display: block;
-            font-size: 16px;
-            border-radius: 10px;
-        }
-
-        .profile:hover #userMenu {
-            display: block;
-            color: red;
-        }
-
-        .dropdown-item:hover {
-            background-color: #333;
-            color: white;
-        }
-        .card{
-            cursor:pointer;
-        }
-    </style>
-
-
     
 </head>
 
@@ -77,9 +28,11 @@
     <%
         PreparedStatement ps=null;
         Connection conn=null;
+        String instructorId=null;
         try{
             Class.forName("com.mysql.jdbc.Driver");
             conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/miniPrj","java1","ironman@3"); 
+            instructorId=(String)session.getAttribute("user");
         }
         catch(Exception e){
             out.println("<script>alert('"+e+"')</script>");
@@ -93,11 +46,19 @@
             Alpha Projects
         </a>
         
-        
-        <div class="profile mr-3">
-            <span class="fa fa-user-circle-o fa-2x" id="user"> </span>
+   <div class="profile mr-3">
+            <div id="user">
+                <span>hi , 
+                    <% 
+                    if(session.getAttribute("user")==null)
+                        response.sendRedirect("../index.html");
+                    else   
+                        out.print(session.getAttribute("user"));
+                    %>
+                <i class="fa fa-user-circle-o px-1"> </i></span>
+            </div>
             <div id="userMenu">
-                <a href="index.html">log-out</a>
+                <a href="./logout.jsp">LogOut</a>
             </div>
         </div>
         <!-- </div> -->
@@ -110,12 +71,12 @@
         <hr>
          <%
             try{
-                String fetch="select teamName,projectName,getSubjectName(subjectCode) as subject,teamCode,teamLogoName from teams where instructorId='anu dhongdi' and subjectCode='"+request.getParameter("subjectCode")+"';";
+                String fetch="select teamName,projectName,getSubjectName(subjectCode) as subject,teamCode,teamLogoName,pstStatus(teamCode) as status,getCardStatus(teamCode) as border from teams where instructorId='"+instructorId+"' and subjectCode='"+request.getParameter("subjectCode")+"';";
                 ps=conn.prepareStatement(fetch);
                 ResultSet rs=ps.executeQuery();
                 
                 while(rs.next()){
-                    out.println("<div class='card my-3 shadow'><h5 class='card-header text-primary'>Team Name - "+rs.getString("teamName")+"<img src='./TeamLogo/"+rs.getString("teamLogoName")+"' alt='logo' width='35' height='35' align='right' style='margin-right: 20px;'></h5><ul class='list-group'><li class='list-group-item'> Subject - "+rs.getString("subject") +"</li><li class='list-group-item'> Prject name - "+rs.getString("projectName")+"</li><li class='list-group-item'>Status - &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Marks - &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Team Code - "+ rs.getString("teamCode")+"</li></ul></div>");
+                    out.println("<div class='card my-3 shadow "+rs.getString("border")+"' onclick='setTeamVal(this)' id='"+rs.getString("teamCode")+"'><h5 class='card-header'>Team Name - "+rs.getString("teamName")+"<img src='../TeamLogo/"+rs.getString("teamLogoName")+"' alt='logo' width='35' height='35' align='right' style='margin-right: 20px;'></h5><ul class='list-group'><li class='list-group-item'> Subject - "+rs.getString("subject") +"</li><li class='list-group-item'> Prject name - "+rs.getString("projectName")+"</li><li class='list-group-item'>Team Code - "+ rs.getString("teamCode")+"</li><li class='list-group-item'>"+rs.getString("status")+"</li></ul></div>");
                 }
 
             }catch(Exception e){
@@ -125,6 +86,12 @@
         
     </div>
 
+    <script>
+        function setTeamVal(team) {
+            console.log(team.id);
+            window.location="pstApprover.jsp?team="+team.id;
+        }
+    </script>
 
 <!-- bootstrap cdn -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"

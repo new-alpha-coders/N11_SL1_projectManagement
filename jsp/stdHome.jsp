@@ -16,53 +16,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
         integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
 
-    <link rel="icon" href="./favicon.ico">    
+    <!-- icon -->
+    <link rel="icon" href="../favicon.ico">
     <title>Home</title>
 
+    <!-- external css -->
+    <link rel="stylesheet" href="../css/home.css">
 
-    <!-- internal css -->
-    <style>
-        /* changing font awesome icon color */
-        .fa-user-circle-o {
-            color: #4F5450;
-            cursor: pointer;
-        }
-
-        /* user dropdown list */
-        .profile {
-            display: inline-block;
-            position: relative;
-        }
-
-        #userMenu {
-            display: none;
-            position: absolute;
-            margin-left: -20px;
-            margin-top: 1px;
-            z-index: 1;
-        }
-
-        #userMenu a {
-            text-decoration: none;
-            width: 120px;
-            color: #333;
-            background-color: whitesmoke;
-            padding: 5px 10px;
-            display: block;
-            font-size: 16px;
-            border-radius: 10px;
-        }
-
-        .profile:hover #userMenu {
-            display: block;
-            color: red;
-        }
-
-        .dropdown-item:hover {
-            background-color: #333;
-            color: white;
-        }
-    </style>
 </head>
 
 <body>
@@ -71,9 +31,11 @@
     <%
         PreparedStatement ps=null;
         Connection conn=null;
+        String enroll=null;
         try{
             Class.forName("com.mysql.jdbc.Driver");
             conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/miniPrj","java1","ironman@3"); 
+            enroll=(String)session.getAttribute("user");
         }
         catch(Exception e){
             out.println("<script>alert('"+e+"')</script>");
@@ -124,9 +86,18 @@
             </ul>
         </div>
         <div class="profile mr-3">
-            <span class="fa fa-user-circle-o fa-2x" id="user"> </span>
+            <div id="user">
+                <span>hi , 
+                    <% 
+                    if(session.getAttribute("user")==null)
+                        response.sendRedirect("../index.html");
+                    else   
+                        out.print(session.getAttribute("user"));
+                    %>
+                <i class="fa fa-user-circle-o px-1"> </i></span>
+            </div>
             <div id="userMenu">
-                <a href="index.html">log-out</a>
+                <a href="./logout.jsp">LogOut</a>
             </div>
         </div>
         <!-- </div> -->
@@ -150,7 +121,7 @@
                             <input type="text" name="joinCode" class="form-control" id="inputTeamCode" required>
                         </div>
                         <hr>
-                        <button type="submit" name="joinTeam" class="btn btn-outline-primary col-sm-3" >Join</button>
+                        <button type="submit" name="joinTeam" class="btn btn-outline-primary col-sm-3">Join</button>
                     </form>
                 </div>
             </div>
@@ -220,17 +191,17 @@
 
                         <div class="form-group">
                             <label for="inputTeamName">Team name</label>
-                            <input type="text" name="teamName" class="form-control" id="inputTeamName" minLength="3" >
+                            <input type="text" name="teamName" class="form-control" id="inputTeamName" minLength="3">
                         </div>
 
                         <div class="form-group">
                             <label for="noOfMembers">No of members</label>
-                            <input type="tel" name="noOfMembers" class="form-control" id="noOfMembers" >
+                            <input type="number" name="noOfMembers" class="form-control" id="noOfMembers">
                         </div>
 
                         <div class="form-group">
                             <label for="projectName">Project name</label>
-                            <input type="text" name="prjName" class="form-control" id="projectName" minLength="3" >
+                            <input type="text" name="prjName" class="form-control" id="projectName" minLength="3">
                         </div>
 
                         <div class="form-group">
@@ -259,12 +230,12 @@
                             <select name="instructorName" id="inputInstructor" class="form-control">
                                 <% 
                                     try{
-                                        String fetchInst="select fname,lname from instructor";
+                                        String fetchInst="select fname,lname,instructorId from instructor";
                                         ps=conn.prepareStatement(fetchInst);
                                         ResultSet rs=ps.executeQuery();
 
                                         while(rs.next()){
-                                            out.println("<option>"+rs.getString("fname")+" "+rs.getString("lname")+"</option>");
+                                            out.println("<option value='"+rs.getString("instructorId")+"'>"+rs.getString("fname")+" "+rs.getString("lname")+"</option>");
                                         }
                                     }
                                     catch(Exception e){
@@ -275,11 +246,20 @@
                             </select>
                         </div>
 
-
                         <div class="form-group">
+                            <label for="discription">Team logo</label>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="teamLogo" name="teamLogo"
+                                    onchange="return fileValidation()" / required>
+                                <label class="custom-file-label" for="customFile">Choose file</label>
+                            </div>
+                            <small class="text-danger">File format must be .png , .jpg , .jpeg , .ico , .svg</small>
+                        </div>
+
+                        <!-- <div class="form-group">
                             <label for="teamLogo">Team logo</label>
                             <input type="file" class="form-control-file" name="teamLogo" id="teamLogo" align="right">
-                        </div>
+                        </div> -->
 
                         <hr>
                         <button type="submit" name="createTeam" class="btn btn-outline-primary col-sm-3">Create</button>
@@ -293,23 +273,41 @@
     <div class="container p-5 my-4 shadow">
         <h2 style="margin-left: 22px;font-weight:bold;"><i class="fa fa-users mx-2"></i>Teams</h2>
         <hr>
-         <%
+        <%
             try{
-                String fetch="select teamName,projectName,getSubjectName(subjectCode) as subject,teamCode,teamLogoName from teams where teamCode=(select teamCode from studentTeams where enroll='vaibhav3')";
+                String fetch="select teamName,projectName,getSubjectName(subjectCode) as subject,pstStatus(teamCode) as status,teamCode,teamLogoName,getCardStatus(teamCode) as border from teams where teamCode in (select teamCode from studentTeams where enroll='"+enroll+"')";
                 ps=conn.prepareStatement(fetch);
                 ResultSet rs=ps.executeQuery();
                 
                 while(rs.next()){
-                    out.println("<div class='card my-3 shadow'><h5 class='card-header text-primary'>Team Name - "+rs.getString("teamName")+"<img src='./TeamLogo/"+rs.getString("teamLogoName")+"' alt='logo' width='35' height='35' align='right' style='margin-right: 20px;'></h5><ul class='list-group'><li class='list-group-item'> Subject - "+rs.getString("subject") +"</li><li class='list-group-item'> Prject name - "+rs.getString("projectName")+"</li><li class='list-group-item'>Status - &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Marks - &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Team Code - "+ rs.getString("teamCode")+"</li></ul></div>");
+                    out.println("<div class='card my-3 shadow "+rs.getString("border")+"'  style='border-width: 3px;'><h5 class='card-header' id='"+rs.getString("teamCode")+"' onclick='setTeamVal(this)'>Team Name - "+rs.getString("teamName")+"<img src='../TeamLogo/"+rs.getString("teamLogoName")+"' alt='logo' width='35' height='35' align='right' style='margin-right: 20px;'></h5><ul class='list-group'><li class='list-group-item'> Subject - "+rs.getString("subject") +"</li><li class='list-group-item'> Project name - "+rs.getString("projectName")+"</li><li class='list-group-item'>Team Code - <span  title='click to copy' id='"+ rs.getString("teamCode")+"Copy' onclick='setData(this)'>"+ rs.getString("teamCode")+"</span></li><li class='list-group-item'>"+rs.getString("status")+"</li></ul></div>");
                 }
 
             }catch(Exception e){
-                out.println("<script>alert('"+e+"')</script>");
+                out.println("<script>alert('"+e.getMessage()+"')</script>");
             }
         %>
-        
+
     </div>
 
+
+    <script>
+        function setTeamVal(team) {
+            console.log(team.id);
+            window.location="submitPs.jsp?team="+team.id;
+        }
+
+
+        function setData(temp){
+            const data=temp.id;
+            var textArea=document.createElement("textarea");
+            textArea.value=document.getElementById(data).innerText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("Copy");
+            textArea.remove();
+        }
+    </script>
 
     <!-- JSP -->
     <%
@@ -320,7 +318,7 @@
                 String joinCode=request.getParameter("joinCode");
                 String insertData="insert into studentTeams values(?,?)";
                 ps=conn.prepareStatement(insertData);
-                ps.setString(1,"vaibhav3");
+                ps.setString(1,enroll);
                 ps.setString(2,joinCode);
 
                 checkInsert=ps.executeUpdate();
@@ -334,7 +332,7 @@
 
             }
             catch(Exception e){
-                out.println("<script>alert('"+e+"')</script>");
+                out.println("<script>alert('Team not found...')</script>");
             }
         }
 
@@ -343,7 +341,7 @@
                 String leaveCode=request.getParameter("leaveCode");
                 String deleteData="delete from studentTeams where enroll=? and teamCode=?;";
                 ps=conn.prepareStatement(deleteData);
-                ps.setString(1,"vaibhav3");
+                ps.setString(1,enroll);
                 ps.setString(2,leaveCode);
 
                 checkInsert=ps.executeUpdate();
@@ -357,43 +355,50 @@
 
             }
             catch(Exception e){
-                out.println("<script>alert('"+e+"')</script>");
+                out.println("<script>alert('Failed..')</script>");
             }
         }
         int checkDelete=0;
         if(request.getParameter("deleteTeam")!=null){
             try{
                 String deleteCode=request.getParameter("deleteCode");
+           
+                String deleteData="delete from studentTeams where teamCode=? and enroll=?";
+                ps=conn.prepareStatement(deleteData);
+                ps.setString(1,deleteCode);
+                ps.setString(2,enroll);
+
+                ps.executeUpdate();
                 String deleteTeamData="delete from teams where enroll=? and teamCode=?;";
                 ps=conn.prepareStatement(deleteTeamData);
-                ps.setString(1,"vaibhav3");
+                ps.setString(1,enroll);
                 ps.setString(2,deleteCode);
-
+                
                 checkDelete=ps.executeUpdate();
-
-                    if(checkDelete==0)
-                        out.println("<script>alert('Failed...')</script>");
-                    else{
-                        String deleteData="delete from studentTeams where teamCode=?;";
-                        ps=conn.prepareStatement(deleteData);
-                        ps.setString(1,deleteCode);
-
-                        checkDelete=ps.executeUpdate();
-                        if(checkDelete==0)
-                            out.println("<script>alert('Failed...')</script>");
-                        else{
-                            response.setStatus(response.SC_MOVED_TEMPORARILY);
-                            response.setHeader("Location", "stdHome.jsp");
-                        }
-                    }
+                if(checkDelete==0)
+                    out.println("<script>alert('Failed...')</script>");
+                else{
+                    response.setStatus(response.SC_MOVED_TEMPORARILY);
+                    response.setHeader("Location", "stdHome.jsp");
+                }
 
             }
             catch(Exception e){
-                out.println("<script>alert('"+e+"')</script>");
+                out.println("<script>alert('Failed....')</script>");
             }
         }
+
+        /*
+
+        String team=request.getParameter("team");
+
+        if(team!=null){
+            String checkStatus="select * from"
+        }*/
     %>
 
+    <!-- external js -->
+    <script src="../js/validation.js"></script>
     <!-- bootstrap cdn -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
@@ -404,17 +409,17 @@
 
 
     <!-- Footer for contact-us -->
-    <footer class="page-footer p-4 bg-dark text-light d-print-none" style="position:relative;bottom:0;width:100%;">
-        
+    <footer class="page-footer p-4 bg-dark text-light d-print-none" style="position:fixed;bottom:0;width:100%;">
+
         <p class="lead ml-2" style="font-size:18px;"> Contact Us &emsp;
-            <div class="col-sm-auto mt-1">
+        <div class="col-sm-auto mt-1">
             <i class="fa fa-github fa-lg" aria-hidden="true"></i> Github &emsp;
-            </div>
-            <div class="col-sm-auto mt-1">
+        </div>
+        <div class="col-sm-auto mt-1">
             <i class="fa fa-envelope fa-lg" aria-hidden="true"></i> Gmail
-            </div>
+        </div>
         </p>
-       
+
     </footer>
 </body>
 
