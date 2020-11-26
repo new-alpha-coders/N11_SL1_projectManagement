@@ -49,7 +49,8 @@
         ResultSet check=ps.executeQuery();
         
         if(check.next()){
-            if(!"".equals(check.getString("status"))){
+            out.print(check.getString("status"));
+            if(check.getString("status")!=null){
                 out.print("<script>window.location='codeSubmission.jsp?team="+teamCode+"';</script>");
             }
         }

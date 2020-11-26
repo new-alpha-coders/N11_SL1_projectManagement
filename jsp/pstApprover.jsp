@@ -73,7 +73,7 @@
                  }
                  else{
                      pstmt=rs2.getString("pstmt");
-                     if(!"".equals(rs2.getString("code"))){
+                     if(rs2.getString("code")!=null){
                          out.print("<script>window.location='viewProject.jsp?team="+teamcode+"';</script>");
                      }
                  }
@@ -170,11 +170,11 @@
                     int x=ps.executeUpdate();
                     if(x!=-1)
                     {
-                        out.print("ps status updated");    
+                        out.print("<script>alert('Status Updated...');window.location='instructorHome.jsp';</script>");   
                     }
                     else
                     {
-                        out.print("ps status not updated");   
+                        out.print("<script>alert('Failed...');</script>");   
                     }
                 }
                 catch(Exception e)

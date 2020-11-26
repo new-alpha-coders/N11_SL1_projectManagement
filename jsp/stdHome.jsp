@@ -275,7 +275,7 @@
         <hr>
         <%
             try{
-                String fetch="select teamName,projectName,getSubjectName(subjectCode) as subject,pstStatus(teamCode) as status,teamCode,teamLogoName,getCardStatus(teamCode) as border from teams where teamCode in (select teamCode from studentTeams where enroll='"+enroll+"')";
+                String fetch="select teamName,projectName,getSubjectName(subjectCode) as subject,pstStatus(teamCode) as status,teamCode,teamLogoName,getCardStatus(teamCode) as border from teams where teamCode in (select teamCode from studentTeams where enroll='"+enroll+"') order by teamName desc";
                 ps=conn.prepareStatement(fetch);
                 ResultSet rs=ps.executeQuery();
                 
@@ -409,7 +409,7 @@
 
 
     <!-- Footer for contact-us -->
-    <footer class="page-footer p-4 bg-dark text-light d-print-none" style="position:fixed;bottom:0;width:100%;">
+    <footer class="page-footer p-4 bg-dark text-light d-print-none" style="position:relative;bottom:0;width:100%;">
 
         <p class="lead ml-2" style="font-size:18px;"> Contact Us &emsp;
         <div class="col-sm-auto mt-1">

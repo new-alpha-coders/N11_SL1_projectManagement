@@ -146,21 +146,46 @@ String desc=request.getParameter("desc");
 
 try
 {
-    ps=con.prepareStatement("insert into  projectDesc(domain,pstmt,descPs,teamCode) values(?,?,?,?);");
-    ps.setString(1,domain);
-    ps.setString(2,pstmt);
-    ps.setString(3,desc);
-    ps.setString(4,teamCode);
-    int x=ps.executeUpdate();
-    if(x!=-1)
-    {
-        out.print("<script>alert('Problem statement is submitted...\\nwait for approval\\n');window.location='stdHome.jsp';</script>");
+
+    String checkPs="select * from projectDesc where teamCode='"+teamCode+"';";
+    ps=con.prepareStatement(checkPs);
+    ResultSet rs=ps.executeQuery();
+    
+    if(rs.next()){
+        ps=con.prepareStatement("update projectDesc set domain=?,pstmt=?,descPs=? where teamCode=?;");
+        ps.setString(1,domain);
+        ps.setString(2,pstmt);
+        ps.setString(3,desc);
+        ps.setString(4,teamCode);
+
+        int x=ps.executeUpdate();
+        if(x!=-1)
+        {
+            out.print("<script>alert('Problem statement is submitted...\\nwait for approval\\n');window.location='stdHome.jsp';</script>");
+        }
+        else
+        {
+            out.print("<script>alert('Failed...');</script>");   
+        }
+        
     }
-    else
-    {
-        out.print("<script>alert('Failed...');</script>");   
+    else{
+        ps=con.prepareStatement("insert into  projectDesc(domain,pstmt,descPs,teamCode) values(?,?,?,?);");
+        ps.setString(1,domain);
+        ps.setString(2,pstmt);
+        ps.setString(3,desc);
+        ps.setString(4,teamCode);
+        int x=ps.executeUpdate();
+        if(x!=-1)
+        {
+            out.print("<script>alert('Problem statement is submitted...\\nwait for approval\\n');window.location='stdHome.jsp';</script>");
+        }
+        else
+        {
+            out.print("<script>alert('Failed...');</script>");   
+        }
+        con.close();
     }
-      con.close();
 }
 catch(Exception e)
 {

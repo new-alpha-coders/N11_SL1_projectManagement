@@ -40,18 +40,18 @@
             enroll=(String)session.getAttribute("user");
 
             //check ps Submission
-            String checkSb="select marks as status from projectDesc where teamCode='"+teamCode+"';";
+            String checkSb="select marks as status,code from projectDesc where teamCode='"+teamCode+"';";
             ps=con.prepareStatement(checkSb);    
             ResultSet check=ps.executeQuery();
             
             if(check.next()){
                 //out.print(check.getString("status"));
-               /* if("".equals(check.getString("status"))){
+                if(check.getString("status")==null && check.getString("code")!=null){
                     out.print("<script>alert('Submission is done \\n wait for marks...');window.location='stdHome.jsp';</script>");
                 }
-                else{
+                else if(check.getString("status")!=null && check.getString("code")!=null){
                     out.print("<script>window.location='studentProjectView.jsp?team="+teamCode+"';</script>");
-                }*/
+                }
             }
             
         }
