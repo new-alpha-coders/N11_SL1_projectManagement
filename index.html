@@ -106,37 +106,37 @@
    <div id="student_reg" class="tabcontent">
     <div class="container" >
       <label for="uname"><b> Student Username</b></label>
-      <input type="text" placeholder="Enter Username" name="uname" required>
+      <input type="text" placeholder="Enter Username" name="uname" minlength="6" required>
 
 
       <label for="eno"><b> Enrollment Number</b></label>
-      <input type="text" placeholder="Enter Enrollment Number" name="eno" required>
+      <input type="text" placeholder="Enter Enrollment Number" name="eno" minlength="6" maxlength="11" required>
 
       <div class="row">
         <div class="col">
           <label for="name"><b> Student Name</b></label>
-          <input type="text" class="form-control" placeholder="First name" name="sfname" required>
+          <input type="text" title="Enter alphabets only" class="form-control" placeholder="First name" pattern="[a-zA-Z]+" name="sfname" required>
         </div>
         <div class="col">
           <label for="name">.</label>
-          <input type="text" class="form-control" placeholder="Last name" name="slname" required>
+          <input type="text" title="Enter alphabets only" class="form-control" placeholder="Last name" pattern="[a-zA-Z]+" name="slname" required>
         </div>
       </div>
 
       <label for="exampleInputEmail1"><b>Email address</b></label>
-      <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="semail">
+      <input type="email" title="Enter valid email address" class="form-control" id="exampleInputEmail1" pattern="^[^\d\s]([a-zA-Z\d_])+\@[a-zA-Z]+(\.[a-zA-Z]+){1,2}$" aria-describedby="emailHelp" placeholder="Enter email" name="semail" required>
       <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
 
 
       <label for="phone"><b>Phone number:</b></label>
-      <input type="tel" class="form-control" id="phone" aria-describedby="emailHelp" placeholder="Enter phone number" pattern="[0-9]{10}" name="spno">
+      <input type="tel" class="form-control" id="phone" aria-describedby="emailHelp" placeholder="Enter phone number" pattern="[0-9]{10}" name="spno" minlength="10" maxlength="10">
       <small id="emailHelp" class="form-text text-muted">Enter 10 digit only</small>
 
       <label for="psw"><b>Password</b></label>
-      <input type="password" placeholder="Enter Password" name="spsw" required>
+      <input type="password" placeholder="Enter Password" id="spsw" name="spsw" minlength="8" maxlength="16" required>
 
       <label for="pswre"><b>Confim Password</b></label>
-      <input type="password" placeholder="Re-Enter Password" name="spswre" required>
+      <input type="password" placeholder="Re-Enter Password" id="scpsw" onchange="validateSPwd()" name="spswre" minlength="8" maxlength="16" required>
         
       <button type="submit">REGISTER</button>
      
@@ -153,39 +153,39 @@
    <div id="instru_reg" class="tabcontent">
     <div class="container" >
       <label for="iuname"><b> Instructor Username</b></label>
-      <input type="text" placeholder="Enter Username" name="iuname" required>
+      <input type="text" placeholder="Enter Username" name="iuname" minlength="6" required>
 
 
       <label for="iid"><b> Instructor id</b></label>
-      <input type="text" placeholder="Enter id" name="iid" required>
+      <input type="text" placeholder="Enter id" name="iid" minlength="6" maxlength="12" required>
 
 
       <div class="row">
            
         <div class="col">
           <label for="iname"><b> Instructor Name</b></label>
-          <input type="text" class="form-control" placeholder="First name" name="ifname" required>
+          <input type="text" title="Enter alphabets only" class="form-control" placeholder="First name" pattern="[a-zA-Z]+" name="ifname" required>
         </div>
         <div class="col">
           <label for="iname">.</label>
-          <input type="text" class="form-control" placeholder="Last name" name="ilname" required>
+          <input type="text" title="Enter alphabets only" class="form-control" placeholder="Last name" pattern="[a-zA-Z]+" name="ilname" required>
         </div>
       </div>
 
       <label for="exampleInputEmail1"><b>Email address</b></label>
-      <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" name="iemail">
+      <input type="email" title="Enter valid email address" class="form-control" id="exampleInputEmail1" pattern="^[^\d\s]([a-zA-Z\d_])+\@[a-zA-Z]+(\.[a-zA-Z]+){1,2}$" aria-describedby="emailHelp" placeholder="Enter email" name="iemail" required>
       <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
 
 
       <label for="phone"><b>Phone number:</b></label>
-      <input type="tel" class="form-control" id="phone" aria-describedby="emailHelp" placeholder="Enter phone number" pattern="[0-9]{10}" name="ipno">
+      <input type="tel" class="form-control" id="phone" aria-describedby="emailHelp" placeholder="Enter phone number" pattern="[0-9]{10}" name="ipno" minlength="10" maxlength="10">
       <small id="emailHelp" class="form-text text-muted">Enter 10 digit only</small>
 
       <label for="psw"><b>Password</b></label>
-      <input type="password" placeholder="Enter Password" name="ipsw" required>
+      <input type="password" placeholder="Enter Password" name="ipsw" id="ipsw" required minlength="8" maxlength="16" required>
 
       <label for="pswre"><b>Confim Password</b></label>
-      <input type="password" placeholder="Re-Enter Password" name="ipswre" required>
+      <input type="password" placeholder="Re-Enter Password" name="ipswre" id="icpsw" onchange="validateIPwd()" required minlength="8" maxlength="16" required>
         
       <button type="submit" onclick="invoke(1)">REGISTER</button>
      
@@ -225,6 +225,27 @@
 </div>
  
 <script type="text/javascript">
+
+
+  function validateSPwd(){
+
+
+    const pass1=document.getElementById("scpsw").value;
+    const pass2=document.getElementById("spsw").value;
+
+    pass1 != pass2 ? document.getElementById("scpsw").setCustomValidity("Passwords don't Match") : document.getElementById("scpsw").setCustomValidity('');
+    //console.log(pass1);
+  }
+
+  function validateIPwd(){
+
+    const pass1=document.getElementById("icpsw").value;
+    const pass2=document.getElementById("ipsw").value;
+
+    pass1 != pass2 ? document.getElementById("icpsw").setCustomValidity("Passwords don't Match") : document.getElementById("icpsw").setCustomValidity('');
+    //console.log(pass1);
+}
+
   // Get the modal
   var modal = document.getElementById('id01');
   

@@ -40,10 +40,21 @@
             con=DriverManager.getConnection("jdbc:mysql://localhost:3306/miniPrj","java1","ironman@3"); 
             enroll=(String)session.getAttribute("user");
 
+            //check Dates
+            String checkDt="select dateValidator(?) as dateStatus;";
+            ps=con.prepareStatement(checkDt); 
+            ps.setString(1,teamCode);
+            ResultSet check=ps.executeQuery();   
+            if(check.next()){
+                if("ProblemStatement Submission Date Is Expired..".equals(check.getString("dateStatus"))){
+                    out.print("<script>window.location='afterApprove.jsp?team="+teamCode+"';</script>");
+                }
+            }
+
             //check ps Submission
             String checkSb="select PsStatus as status from projectDesc where teamCode='"+teamCode+"';";
             ps=con.prepareStatement(checkSb);    
-            ResultSet check=ps.executeQuery();
+            check=ps.executeQuery();
             
             if(check.next()){
                 if("Problem Statement Accepted".equals(check.getString("status"))){
@@ -53,6 +64,7 @@
                     out.print("<script>alert('Problem statement is submitted...\\nwaiting for approval\\n');window.location='stdHome.jsp';</script>");
                 }
             }
+            
 
         }
         catch(Exception e){

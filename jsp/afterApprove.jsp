@@ -43,16 +43,30 @@
         con=DriverManager.getConnection("jdbc:mysql://localhost:3306/miniPrj","java1","ironman@3"); 
         enroll=(String)session.getAttribute("user");
 
+            //check Dates
+            String checkDt="select dateValidator(?) as dateStatus;";
+            ps=con.prepareStatement(checkDt); 
+            ps.setString(1,teamCode);
+            ResultSet check=ps.executeQuery();   
+            if(check.next()){
+                if("Code Submission Date Is Expired..".equals(check.getString("dateStatus"))){
+                    out.print("<script>alert('Submission not allowed...\\nDate Expired');window.location='stdHome.jsp';</script>");
+                }
+            }
+
         //check ps Submission
         String checkSb="select abstract as status from projectDesc where teamCode='"+teamCode+"';";
         ps=con.prepareStatement(checkSb);    
-        ResultSet check=ps.executeQuery();
+        check=ps.executeQuery();
         
         if(check.next()){
             out.print(check.getString("status"));
             if(check.getString("status")!=null){
                 out.print("<script>window.location='codeSubmission.jsp?team="+teamCode+"';</script>");
             }
+        }
+        else{
+            out.print("<script>alert('Submission not allowed...\\nDate Expired');window.location='stdHome.jsp';</script>");
         }
 
     }
