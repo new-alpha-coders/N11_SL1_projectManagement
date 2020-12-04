@@ -313,23 +313,47 @@
     <%
         //Check form is submitted 
         int checkInsert=0;
+        int checkM=0,checkC=0;
+        ResultSet rs=null;
         if(request.getParameter("joinTeam")!=null){
             try{
                 String joinCode=request.getParameter("joinCode");
                 String insertData="insert into studentTeams values(?,?)";
-                ps=conn.prepareStatement(insertData);
-                ps.setString(1,enroll);
-                ps.setString(2,joinCode);
 
-                checkInsert=ps.executeUpdate();
+                String checkMembers="select noOfMembers from teams where teamCode='"+joinCode+"'";
+                ps=conn.prepareStatement(checkMembers);
 
-                    if(checkInsert==0)
-                        out.println("<script>alert('Failed...')</script>");
-                    else{
-                        response.setStatus(response.SC_MOVED_TEMPORARILY);
-                        response.setHeader("Location", "stdHome.jsp");
-                    }
+                rs=ps.executeQuery();
+                if(rs.next()){
+                    checkM=rs.getInt("noOfMembers");
+                }
 
+                String checkCount="select count(enroll) as count from studentTeams where teamCode='"+joinCode+"'";
+                ps=conn.prepareStatement(checkCount);
+
+                rs=ps.executeQuery();
+                if(rs.next()){
+                    checkC=rs.getInt("count");
+                }
+
+                if(checkC>=checkM){
+                    out.println("<script>alert('No of members exceeded...')</script>");
+                }
+                else{
+
+                    ps=conn.prepareStatement(insertData);
+                    ps.setString(1,enroll);
+                    ps.setString(2,joinCode);
+
+                    checkInsert=ps.executeUpdate();
+
+                        if(checkInsert==0)
+                            out.println("<script>alert('Failed...')</script>");
+                        else{
+                            response.setStatus(response.SC_MOVED_TEMPORARILY);
+                            response.setHeader("Location", "stdHome.jsp");
+                        }
+                }
             }
             catch(Exception e){
                 out.println("<script>alert('Team not found...')</script>");
