@@ -29,7 +29,7 @@ create function getCardStatus(tc varchar(20))
 returns varchar(50) begin declare temp varchar(150) default ""; 
 declare result varchar(50) default ""; 
 select marks into temp from projectDesc where teamCode=tc; 
-if temp != "" then set result = "bg-success"; 
+if temp != "0" then set result = "bg-success"; 
 else  
 select PsStatus into temp from projectDesc where teamCode=tc; 
 if temp = "Problem Statement Accepted" then 
@@ -41,5 +41,15 @@ if temp = "" then
 set result = " "; end if; 
 end if; 
 return(result); 
+end#
+
+create function getTeamCodeToSubject(inputCode varchar(20)) 
+returns varchar(60) 
+begin 
+declare subjectNm varchar(60); 
+declare temp varchar(20); 
+select subjectCode into temp from teams where teamCode=inputCode; 
+select subjectName into subjectNm from subject where subjectCode=temp; 
+return (subjectNm); 
 end#
 

@@ -16,6 +16,7 @@ String email=request.getParameter("semail");
 String phoneno=request.getParameter("spno");
 String psw=request.getParameter("spsw");
 String pswre=request.getParameter("spswre");
+String sClass=request.getParameter("sClass");
 
 try
 {
@@ -30,7 +31,7 @@ try
     }
     else
     {
-    PreparedStatement ps=con.prepareStatement("insert into student(enroll,uname,fname,lname,email,pno,psw) values(?,?,?,?,?,?,?);");
+    PreparedStatement ps=con.prepareStatement("insert into student(enroll,uname,fname,lname,email,pno,psw,class) values(?,?,?,?,?,?,?,?);");
     ps.setString(1,enroll);
     ps.setString(2,uname);
     ps.setString(3,firstName);
@@ -38,6 +39,7 @@ try
     ps.setString(5,email);
     ps.setString(6,phoneno);
     ps.setString(7,psw);
+    ps.setString(8,sClass);
     int x=ps.executeUpdate();
     if(x>0)
     {

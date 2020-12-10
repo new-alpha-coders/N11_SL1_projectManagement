@@ -32,6 +32,7 @@
         PreparedStatement ps=null;
         Connection conn=null;
         String enroll=null;
+        
         try{
             Class.forName("com.mysql.jdbc.Driver");
             conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/miniPrj","java1","ironman@3"); 
@@ -85,7 +86,52 @@
                 </li>
             </ul>
         </div>
-        <div class="profile mr-3">
+        <!--Notification
+        -->
+        <div style="margin-right:20px;">
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown" style="font-size: 18px;">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-bell" aria-hidden="true"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" style="width:500px;" aria-labelledby="navbarDropdown">
+
+                     <% 
+                                    try{
+                                        enroll=(String)session.getAttribute("user");
+                                        
+                                        String fetchClass="select class as studclass from student where enroll='"+enroll+"';";
+                                        ps=conn.prepareStatement(fetchClass);
+                                        ResultSet rs=ps.executeQuery();
+                                        String Studclass=null;
+                                        
+                                        if(rs.next())
+                                        	Studclass=rs.getString("studclass");
+                                        else
+                                        	out.println("<script>alert('Data Not Found')</script>");
+                                        	
+                                        String fetchNotification="select notify,purpose,date,subjectName from notification where class='"+Studclass+"' || teamcode in(select teamCode from studentTeams where enroll='"+enroll+"') order by date desc";
+                                        ps=conn.prepareStatement(fetchNotification);
+                                        ResultSet r=ps.executeQuery();
+                                        while(r.next()){
+                                            out.println("<a class='dropdown-item' data-toggle='modal'><b>"+r.getString("subjectName")+"</b><div class='text-primary'>"+r.getString("purpose")+"</div><br>"+r.getString("notify")+"<br><small style='float:right'>"+r.getString("date")+"</small><br></a><div class='dropdown-divider'></div>");
+                        
+                                        }
+                                    }
+                                    catch(Exception e){
+                                        out.println("<script>alert('"+e+"')</script>");
+                                    }
+                            
+                                %>
+    
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <!-- End notification-->
+
+        <div class="profile mr-1">
             <div id="user">
                 <span>hi , 
                     <% 
@@ -94,10 +140,11 @@
                     else   
                         out.print(session.getAttribute("user"));
                     %>
-                <i class="fa fa-user-circle-o px-1"> </i></span>
+                <i class="fa fa-user-circle-o px-2" > </i></span>
             </div>
             <div id="userMenu">
                 <a href="./logout.jsp">LogOut</a>
+                <a data-toggle="modal" data-target="#updateClassModal">My profile</a>
             </div>
         </div>
         <!-- </div> -->
@@ -157,7 +204,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Leave Team</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Delete Team</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -170,6 +217,38 @@
                         </div>
                         <hr>
                         <button type="submit" name="deleteTeam" class="btn btn-outline-primary col-sm-3">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Modal for updating class-->
+    <div class="modal fade" id="updateClassModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Update profile</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="inputTeamCode">Enroll</label>
+                            <input type="text" name="enroll" class="form-control" id="enroll" value= <%=enroll%> readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputTeamCode">Class</label>
+                             <select class="form-control" id="class" name="class">
+                                <option value="FE">FE</option>
+                                <option value="SE">SE</option>
+                                <option value="TE">TE</option>
+                                <option value="BE">BE</option>
+                           </select>
+                        </div>
+                        <hr>
+                        <button type="submit" name="updateClass" class="btn btn-outline-primary col-sm-3">Update</button>
                     </form>
                 </div>
             </div>
@@ -382,6 +461,30 @@
                 out.println("<script>alert('Failed..')</script>");
             }
         }
+        int checkUpdate=0;
+        if(request.getParameter("updateClass")!=null){
+            try{
+                String studClass=request.getParameter("class");
+                String updateData="update student set class=? where enroll=?;";
+                ps=conn.prepareStatement(updateData);
+                ps.setString(2,enroll);
+                ps.setString(1,studClass);
+
+                checkUpdate=ps.executeUpdate();
+
+                    if(checkUpdate==0)
+                        out.println("<script>alert('Failed...')</script>");
+                    else{
+                        response.setStatus(response.SC_MOVED_TEMPORARILY);
+                        response.setHeader("Location", "stdHome.jsp");
+                    }
+
+            }
+            catch(Exception e){
+                out.println("<script>alert('Failed..')</script>");
+            }
+        }
+
         int checkDelete=0;
         if(request.getParameter("deleteTeam")!=null){
             try{

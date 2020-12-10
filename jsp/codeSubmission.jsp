@@ -46,10 +46,10 @@
             
             if(check.next()){
                 //out.print(check.getString("status"));
-                if(check.getString("status")==null && check.getString("code")!=null){
+                if(("0".equals(check.getString("status"))) && check.getString("code")!=null){
                     out.print("<script>alert('Submission is done \\n wait for marks...');window.location='stdHome.jsp';</script>");
                 }
-                else if(check.getString("status")!=null && check.getString("code")!=null){
+                else if(!"0".equals(check.getString("status")) && check.getString("code")!=null){
                     out.print("<script>window.location='studentProjectView.jsp?team="+teamCode+"';</script>");
                 }
             }

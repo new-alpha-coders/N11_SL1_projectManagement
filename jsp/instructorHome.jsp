@@ -153,6 +153,13 @@
                                 %>
                             </select>
                         </div>
+                        <label for="sClass"> Class</label>
+                        <select class="form-control" id="sClass" name="sClass">
+                             <option value="FE">FE</option>
+                             <option value="SE">SE</option>
+                             <option value="TE">TE</option>
+                              <option value="BE">BE</option>
+                        </select>
                         <div class="form-group">
                             <label for="pstDate">Project starting date</label>
                             <input type="date" name="prjAssignDate" class="form-control" id="pstDate" required>
@@ -336,14 +343,16 @@
                 String prjAssignDate=new String(request.getParameter("prjAssignDate"));
                 String pstDate=new String(request.getParameter("pstDate"));
                 String codeSbDate=new String(request.getParameter("codeSbDate"));
+                String sClass=request.getParameter("sClass");
 
-                String insertData="insert into assignPrj values(?,?,?,?,?)";
+                String insertData="insert into assignPrj values(?,?,?,?,?,?)";
                 ps=conn.prepareStatement(insertData);
                 ps.setString(1,instructorId);
                 ps.setString(2,subjectData);
                 ps.setString(3,prjAssignDate);
                 ps.setString(4,pstDate);
-                ps.setString(5,codeSbDate);                
+                ps.setString(5,codeSbDate); 
+                ps.setString(6,sClass);               
 
                 checkInsert=ps.executeUpdate();
                 if(checkInsert==0)

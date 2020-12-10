@@ -284,7 +284,7 @@
         }
         catch(Exception e)
         {
-            out.print("<script>alert('Reviewer is already added...');</script>");   
+            out.print(e);   
         }
     %>
 
